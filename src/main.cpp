@@ -1,6 +1,7 @@
-#include <iostream>
+#include <windows.h>
 #include <memory>
 #include <thread>
+#include<iostream>
 #include "global_count.h"
 #include "times.h"
 #include "mouse.h"
@@ -38,8 +39,16 @@ private:
 };
 
 int main() {
-    std::cout << "Mouse Lock started" << std::endl;
     try {
+        #ifdef ENABLE_DEBUG_MODE
+        // 调试模式 - 保留控制台窗口
+        std::cout << "Debug mode - Console window visible" << std::endl;
+        #else
+        // Release模式 - 完全隐藏
+        FreeConsole(); // 完全脱离控制台
+        SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
+        #endif
+
         GlobalCount gc;
         BlueScreenSimulator blueScreen(gc);
         gc.setBlueScreen(&blueScreen);
@@ -58,16 +67,14 @@ int main() {
 
         ThreadPool pool(gc);
         
-        std::string input;
-        std::cin >> input; // Wait for user input to exit
-        
+        // 主线程等待工作线程完成
         if (blueScreenThread.joinable()) {
             blueScreenThread.join();
         }
         
         return 0;
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        // 错误处理可以记录到日志文件
         return 1;
     }
 }

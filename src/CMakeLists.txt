@@ -23,6 +23,15 @@ target_link_libraries(${PROJECT_NAME}
   blue_screen
 )
 
+# Windows specific libraries
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        kernel32.lib
+        user32.lib
+    )
+endif()
+
 
 
 # Add explicit install target

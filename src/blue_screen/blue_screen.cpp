@@ -1,8 +1,14 @@
 #include "blue_screen.h"
 #include <windows.h>
-#include <iostream>
+#include <objidl.h>
 #include <gdiplus.h>
+#include <iostream>
 #include <atomic>
+
+// 确保PROPID类型定义可用
+#ifndef PROPID
+#define PROPID unsigned long
+#endif
 
 LRESULT CALLBACK BlueScreenSimulator::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     BlueScreenSimulator* pThis = reinterpret_cast<BlueScreenSimulator*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));

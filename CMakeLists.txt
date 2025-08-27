@@ -7,6 +7,11 @@ project(mouse_lock
   LANGUAGES CXX
 )
 
+# Windows specific settings
+if(WIN32)
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
+endif()
+
 # Standard and properties
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,7 +26,7 @@ if(if_debug)
     add_compile_definitions(ENABLE_DEBUG_MODE=1)
     message(STATUS "Debug output enabled")
 else()
-    message(STATUS "Debug output disabled")
+    message(STATUS "Debug output disabled - Release mode")
 endif()
 
 # Directory structure
