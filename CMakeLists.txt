@@ -1,0 +1,71 @@
+cmake_minimum_required(VERSION 3.15)
+
+# Project configuration
+project(mouse_lock
+  VERSION 0.1.0
+  DESCRIPTION "Mouse and keyboard input monitoring tool"
+  LANGUAGES CXX
+)
+
+# Standard and properties
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Options
+option(BUILD_TESTING "Build tests" ON)
+option(if_debug "Enable debug output if true" OFF)
+
+# Set debug flag based on if_debug option
+if(if_debug)
+    add_compile_definitions(ENABLE_DEBUG_MODE=1)
+    message(STATUS "Debug output enabled")
+else()
+    message(STATUS "Debug output disabled")
+endif()
+
+# Directory structure
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(GLOBAL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+
+# Check for optional OpenCV
+find_package(OpenCV)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found (optional)")
+    message(STATUS "OpenCV_DIR = ${OpenCV_DIR}")
+    message(STATUS "OpenCV libraries = ${OpenCV_LIBS}")
+else()
+    message(WARNING "You don't have opencv, but it doesn't affect project compilation, and future projects may use opencv")
+endif()
+
+# Common target properties
+add_library(common_config INTERFACE)
+target_include_directories(common_config INTERFACE 
+  ${GLOBAL_INCLUDE_DIR}
+  ${PROJECT_SOURCE_DIR}/src/global_count
+)
+target_compile_options(common_config INTERFACE
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
+)
+
+# Add subdirectories
+add_subdirectory(${SRC_DIR})
+
+# Standard installation paths
+include(GNUInstallDirs)
+
+# Install executable
+install(TARGETS mouse_lock_main
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Install project libraries
+install(TARGETS global_count tools blue_screen
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Packaging
+include(CPack)
