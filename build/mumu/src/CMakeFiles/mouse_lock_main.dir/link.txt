@@ -1,3 +1,0 @@
-D:\Qt\Tools\CMake_64\bin\cmake.exe -E rm -f CMakeFiles\mouse_lock_main.dir/objects.a
-D:\Qt\Tools\mingw1310_64\bin\ar.exe qc CMakeFiles\mouse_lock_main.dir/objects.a @CMakeFiles\mouse_lock_main.dir\objects1.rsp
-d:\Qt\Tools\mingw1310_64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\mouse_lock_main.dir/objects.a -Wl,--no-whole-archive -o ..\bin\mouse_lock_main.exe -Wl,--out-implib,libmouse_lock_main.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\mouse_lock_main.dir\linkLibs.rsp
