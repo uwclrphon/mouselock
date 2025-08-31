@@ -51,7 +51,6 @@ int main() {
 
         GlobalCount gc;
         BlueScreenSimulator blueScreen(gc);
-        gc.setBlueScreen(&blueScreen);
         
         // 启动蓝屏监控线程
         std::thread blueScreenThread([&gc, &blueScreen]() {

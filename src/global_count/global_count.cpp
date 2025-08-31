@@ -1,14 +1,9 @@
 #include "global_count.h"
-#include "blue_screen.h"
 #include <sstream>
 
 GlobalCount::GlobalCount() {}
 
-GlobalCount::~GlobalCount() {
-    if (blue_screen_) {
-        delete blue_screen_;
-    }
-}
+GlobalCount::~GlobalCount() {}
 
 void GlobalCount::resetTime() {
     time_.store(0);

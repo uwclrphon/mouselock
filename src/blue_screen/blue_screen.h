@@ -23,6 +23,8 @@ private:
     HBRUSH blueBrush = nullptr;
     HBITMAP blueImage = nullptr;
     ULONG_PTR gdiplusToken = 0;  // GDI+ token
+    bool isWindowClassRegistered = false;
+    std::atomic<bool> shouldStop{false};
     GlobalCount& gc_;
 };
 

@@ -68,15 +68,14 @@ LRESULT CALLBACK BlueScreenSimulator::WindowProc(HWND hWnd, UINT message, WPARAM
 BlueScreenSimulator::BlueScreenSimulator(GlobalCount& gc) : gc_(gc) {
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+    isWindowClassRegistered = false;
 }
 
 BlueScreenSimulator::~BlueScreenSimulator() {
-    stop();
-    if (blueBrush) {
-        DeleteObject(blueBrush);
-    }
-    if (blueImage) {
-        DeleteObject(blueImage);
+    stop();  // stop()已经处理了所有资源释放
+    // 注销窗口类
+    if (isWindowClassRegistered) {
+        UnregisterClassW(L"BlueScreenWindowClass", GetModuleHandle(nullptr));
     }
     Gdiplus::GdiplusShutdown(gdiplusToken);
 }
@@ -100,16 +99,24 @@ void BlueScreenSimulator::start() {
     }
 
     // 注册窗口类
-    WNDCLASSW wc{};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = L"BlueScreenWindowClass";
-    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    
-    if (!RegisterClassW(&wc)) {
-        std::cerr << "Failed to register window class: " << GetLastError() << std::endl;
-        return;
+    if (!isWindowClassRegistered) {
+        WNDCLASSW wc{};
+        wc.lpfnWndProc = WindowProc;
+        wc.hInstance = GetModuleHandle(nullptr);
+        wc.lpszClassName = L"BlueScreenWindowClass";
+        wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        
+        if (RegisterClassW(&wc)) {
+            isWindowClassRegistered = true;
+        } else {
+            DWORD error = GetLastError();
+            if (error != ERROR_CLASS_ALREADY_EXISTS) {
+                std::cerr << "Failed to register window class: " << error << std::endl;
+                return;
+            }
+            isWindowClassRegistered = true;
+        }
     }
 
     // 创建全屏窗口
@@ -155,11 +162,46 @@ void BlueScreenSimulator::start() {
 }
 
 void BlueScreenSimulator::stop() {
+    if (!isActive() || shouldStop) {
+        return;
+    }
+
+    OutputDebugStringA("Blue screen stop initiated\n");
+    shouldStop = true;
+
+    // 关闭窗口
     if (blueScreenWindow) {
+        OutputDebugStringA("Sending WM_CLOSE to blue screen window\n");
+        PostMessage(blueScreenWindow, WM_CLOSE, 0, 0);
+        
+        // 处理剩余消息
+        MSG msg;
+        while (PeekMessage(&msg, blueScreenWindow, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        
         DestroyWindow(blueScreenWindow);
         blueScreenWindow = nullptr;
+        OutputDebugStringA("Blue screen window destroyed\n");
     }
+
+    // 释放资源
+    if (blueBrush) {
+        DeleteObject(blueBrush);
+        blueBrush = nullptr;
+    }
+    if (blueImage) {
+        DeleteObject(blueImage);
+        blueImage = nullptr;
+    }
+
+    // 更新状态
     gc_.setBlueScreenActive(false);
+    gc_.setMouseLock(false);  // 立即解锁鼠标
+    gc_.setFakeBlueScreen(false);
+    
+    OutputDebugStringA("Blue screen stopped completely\n");
 }
 
 bool BlueScreenSimulator::isActive() const {
@@ -168,13 +210,16 @@ bool BlueScreenSimulator::isActive() const {
 
 void BlueScreenSimulator::messageLoop() {
     MSG msg;
-    while (isActive() && GetMessage(&msg, nullptr, 0, 0)) {
+    shouldStop = false;
+    OutputDebugStringA("Blue screen message loop started\n");
+    
+    while (!shouldStop && GetMessage(&msg, nullptr, 0, 0)) {
         if (msg.message == WM_MBUTTONDOWN) {
             OutputDebugStringA("WM_MBUTTONDOWN received\n");
         }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    // Unlock mouse when message loop ends
-    gc_.setMouseLock(false);
+    
+    OutputDebugStringA("Blue screen message loop ended\n");
 }

@@ -64,7 +64,6 @@ private:
     const int fake_blue_screen_time_{DEFAULT_BLUE_SCREEN_TIME};
     std::atomic<bool> is_fake_blue_screen_{false};
     std::atomic<bool> is_blue_screen_active_{false};
-    BlueScreenSimulator* blue_screen_{nullptr};
 
 public:
     [[nodiscard]] bool isBlueScreenActive() const {
@@ -73,10 +72,6 @@ public:
 
     void setBlueScreenActive(bool active) {
         is_blue_screen_active_.store(active);
-    }
-
-    void setBlueScreen(BlueScreenSimulator* blue_screen) {
-        blue_screen_ = blue_screen;
     }
 
 private:

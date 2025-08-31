@@ -12,9 +12,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${GLOBAL_INCLUDE_DIR}
 )
 
-# 链接GDI+库
+# 链接依赖库
 target_link_libraries(${PROJECT_NAME} PRIVATE
   gdi32
   gdiplus.lib
   common_config
+  global_count
 )

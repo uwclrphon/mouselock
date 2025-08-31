@@ -17,7 +17,4 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # Link project libraries
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-  blue_screen
-)
+# Removed blue_screen to break circular dependency
