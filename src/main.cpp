@@ -1,79 +1,94 @@
-#include <windows.h>
-#include <memory>
-#include <thread>
-#include<iostream>
-#include "global_count.h"
-#include "times.h"
-#include "mouse.h"
-#include "keyword.h"
-#include "blue_screen.h"
+#include <iostream>
+#include <filesystem>
+#include "qt_std1.h"
+#include "./utils/logger.h"
+#include <QApplication>
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QAction>
+#include <QStyle>
+#include "../include/core.h"
+#include "./core/global_count/global_count.h"
+#pragma comment(lib, "user32.lib")
 
-class ThreadPool {
-public:
-    ThreadPool(GlobalCount& gc) : gc_(gc) {
-        startThreads();
-    }
-
-    ~ThreadPool() {
-        stopThreads();
-    }
-
-private:
-    void startThreads() {
-        time_thread_ = std::thread(update_time, &gc_);
-        click_thread_ = std::thread(update_click, &gc_);
-        keyword_thread_ = std::thread(update_keyword, &gc_);
-    }
-
-    void stopThreads() {
-        gc_.stopUpdates();
-        if (time_thread_.joinable()) time_thread_.join();
-        if (click_thread_.joinable()) click_thread_.join();
-        if (keyword_thread_.joinable()) keyword_thread_.join();
-    }
-
-    GlobalCount& gc_;
-    std::thread time_thread_;
-    std::thread click_thread_;
-    std::thread keyword_thread_;
-};
-
-int main() {
-    try {
-        #ifdef ENABLE_DEBUG_MODE
-        // 调试模式 - 保留控制台窗口
-        std::cout << "Debug mode - Console window visible" << std::endl;
-        #else
-        // Release模式 - 完全隐藏
-        FreeConsole(); // 完全脱离控制台
-        SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
-        #endif
-
-        GlobalCount gc;
-        BlueScreenSimulator blueScreen(gc);
-        
-        // 启动蓝屏监控线程
-        std::thread blueScreenThread([&gc, &blueScreen]() {
-            while (gc.shouldUpdateTime()) {
-                if (gc.isFakeBlueScreen() && !gc.isBlueScreenActive()) {
-                    blueScreen.start();
-                } else if (!gc.isFakeBlueScreen() && gc.isBlueScreenActive()) {
-                    blueScreen.stop();
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-        });
-
-        ThreadPool pool(gc);
-        
-        // 主线程等待工作线程完成
-        if (blueScreenThread.joinable()) {
-            blueScreenThread.join();
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    
+    // 初始化全局计数器
+    GlobalCount gc;
+    
+    // 启动core线程
+    std::atomic<bool> running(true);
+    std::thread coreThread([&gc, &running]() {
+        try {
+            runCoreApplication(gc);
+        } catch (...) {
+            running = false;
         }
-        
-        return 0;
-    } catch (const std::exception& e) {
-        // 错误处理可以记录到日志文件
-        return 1;
+    });
+
+    // 初始化日志系统
+    namespace fs = std::filesystem;
+    fs::path logDir("logs");
+    if (!fs::exists(logDir)) {
+        fs::create_directory(logDir);
     }
+    Logger::getInstance().init("logs/mouselock.log");
+
+    // 程序退出时停止线程
+    QObject::connect(&a, &QApplication::aboutToQuit, [&]() {
+        Logger::getInstance().log("正在停止线程...");
+        running = false;
+        gc.stopUpdates(); // 确保全局计数器停止更新
+        
+        /*if (coreThread.joinable()) {
+            Logger::getInstance().log("等待线程结束，最多等待5秒...");
+            auto start = std::chrono::steady_clock::now();
+            coreThread.join();
+            auto end = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            Logger::getInstance().log("线程已成功停止，耗时 " + std::to_string(duration) + " 毫秒");
+        }
+        */
+        Logger::getInstance().log("程序退出中...");
+        exit(0);
+    });
+
+    // 处理异常退出
+    std::set_terminate([](){
+        Logger::getInstance().log("错误: 发生未捕获异常，强制退出程序");
+        std::exit(1);
+    });
+
+    Logger::getInstance().log("MouseLock 程序已启动");
+    
+    // 创建系统托盘图标
+    QSystemTrayIcon trayIcon;
+    trayIcon.setIcon(QApplication::style()->standardIcon(QStyle::SP_ComputerIcon));
+    trayIcon.setToolTip("MouseLock");
+    
+    // 创建右键菜单
+    QMenu* trayMenu = new QMenu();
+    
+    // 添加设置菜单项
+    QAction* settingsAction = new QAction("设置", trayMenu);
+    QObject::connect(settingsAction, &QAction::triggered, [&]() {
+        static qt_std1 w; // 使用static确保窗口只创建一次
+        w.show();
+    });
+    trayMenu->addAction(settingsAction);
+    
+    // 添加退出菜单项
+    QAction* quitAction = new QAction("退出", trayMenu);
+    QObject::connect(quitAction, &QAction::triggered, &a, &QApplication::quit);
+    trayMenu->addAction(quitAction);
+    
+    // 设置托盘菜单
+    trayIcon.setContextMenu(trayMenu);
+    
+    // 显示托盘图标
+    trayIcon.show();
+    
+    return a.exec();
 }

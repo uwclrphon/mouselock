@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <atomic>
 #include <thread>
-#include "global_count.h"
+#include "../global_count/global_count.h"
 
 class BlueScreenSimulator {
 public:

@@ -92,6 +92,13 @@
         "filesystem": "cpp",
         "fstream": "cpp",
         "*.del": "cpp",
-        "*.copy": "cpp"
-    }
+        "*.copy": "cpp",
+        "stack": "cpp",
+        "xtree": "cpp",
+        "regex": "cpp",
+        "future": "cpp",
+        "stdfloat": "cpp",
+        "qstyle": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

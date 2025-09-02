@@ -7,6 +7,15 @@ project(mouse_lock
   LANGUAGES CXX
 )
 
+# Qt configuration
+set(CMAKE_PREFIX_PATH "D:/Qt/6.9.0/mingw_64")
+set(QT_DIR "D:/Qt/6.9.0/mingw_64/lib/cmake/Qt6")
+find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+
+# Set Qt library paths
+set(QT_LIBRARY_DIR "D:/Qt/6.9.0/mingw_64/lib")
+link_directories(${QT_LIBRARY_DIR})
+
 # Windows specific settings
 if(WIN32)
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
@@ -32,10 +41,19 @@ endif()
 # Directory structure
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(GLOBAL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(JSON_UTILS ${PROJECT_SOURCE_DIR}/src/json_utils)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Check for optional OpenCV
 find_package(OpenCV)
+find_package(jsoncpp REQUIRED)
+
+if(jsoncpp_FOUND)
+    message(STATUS "jsoncpp found: ${JSONCPP_DIR}")
+    message(STATUS "jsoncpp include dirs: ${JSONCPP_INCLUDE_DIRS}")
+    include_directories(${JSONCPP_INCLUDE_DIRS})
+endif()
+
 if(OpenCV_FOUND)
     message(STATUS "OpenCV found (optional)")
     message(STATUS "OpenCV_DIR = ${OpenCV_DIR}")
@@ -63,12 +81,6 @@ include(GNUInstallDirs)
 
 # Install executable
 install(TARGETS mouse_lock_main
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-# Install project libraries
-install(TARGETS global_count tools blue_screen
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

@@ -1,22 +1,22 @@
-project(camera
+project(blue_screen
   VERSION 0.1.0
   LANGUAGES CXX
 )
 
-find_package(OpenCV REQUIRED)
-
 add_library(${PROJECT_NAME} SHARED
-  camera_utils.cpp
+  blue_screen.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
   ${GLOBAL_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/include
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${OpenCV_LIBS}
+# 链接依赖库
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  gdi32
+  gdiplus.lib
   common_config
   global_count
 )

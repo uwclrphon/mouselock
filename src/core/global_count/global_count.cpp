@@ -1,9 +1,46 @@
 #include "global_count.h"
+#include "../../../include/json_utils/json_utils.h"
 #include <sstream>
+#include <fstream>
 
-GlobalCount::GlobalCount() {}
+GlobalCount::GlobalCount() {
+    loadConfig();
+    max_mouse_lock_time_ = getConfigValue("mouse_lock_time", isDebugMode() ? 10 : 60);
+    fake_blue_screen_time_ = getConfigValue("blue_screen_time", isDebugMode() ? 20 : 120);
+}
 
 GlobalCount::~GlobalCount() {}
+
+void GlobalCount::loadConfig() {
+    JsonManager jsonManager(static_cast<DebugLogger*>(this));
+    try {
+        config_ = jsonManager.readJson(CONFIG_FILE);
+    } catch (...) {
+        createDefaultConfig();
+    }
+}
+
+void GlobalCount::createDefaultConfig() {
+    JsonManager jsonManager(static_cast<DebugLogger*>(this));
+    std::map<std::string, std::string> defaultConfig = {
+        {"mouse_lock_time", isDebugMode() ? "10" : "60"},
+        {"blue_screen_time", isDebugMode() ? "20" : "120"}
+    };
+    jsonManager.writeJson(CONFIG_FILE, defaultConfig);
+    config_ = defaultConfig;
+}
+
+int GlobalCount::getConfigValue(const std::string& key, int defaultValue) const {
+    auto it = config_.find(key);
+    if (it != config_.end()) {
+        try {
+            return std::stoi(it->second);
+        } catch (...) {
+            return defaultValue;
+        }
+    }
+    return defaultValue;
+}
 
 void GlobalCount::resetTime() {
     time_.store(0);

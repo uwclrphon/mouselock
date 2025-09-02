@@ -1,49 +1,56 @@
-project(mouse_lock_main)
-# Main executable
+project(mouse_lock_main LANGUAGES CXX)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON) # Enable AUTOMOC for Qt files
+set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_subdirectory(core)
+add_subdirectory(json_utils)
+File(GLOB srcs "*.cpp")
+
+# Specify MSVC UTF-8 encoding   
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 add_executable(${PROJECT_NAME}
-  main.cpp
+    WIN32 # If you need a terminal for debug, please comment this statement 
+    ${srcs} 
+) 
+# Link Qt libraries manually
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    Qt6Core.lib
+    Qt6Gui.lib
+    Qt6Widgets.lib
+    global_count
+    core
+    json_utils
 )
 
-# Link common configuration
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-  common_config
+# Add Qt library directory
+link_directories("D:/Qt/6.9.0/mingw_64/lib")
+
+# Add all necessary include directories
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include/json_utils
+    ${PROJECT_SOURCE_DIR}/src/core
+    ${PROJECT_SOURCE_DIR}/src/core/global_count
+    ${PROJECT_SOURCE_DIR}/src/core/blue_screen
+    ${PROJECT_SOURCE_DIR}/src/core/tools
+    ${PROJECT_SOURCE_DIR}/src/utils
+    "D:/Qt/6.9.0/mingw_64/include"
+    "D:/Qt/6.9.0/mingw_64/include/QtCore"
+    "D:/Qt/6.9.0/mingw_64/include/QtGui"
+    "D:/Qt/6.9.0/mingw_64/include/QtWidgets"
 )
 
-# Add subdirectories
-add_subdirectory(global_count)
-add_subdirectory(tools)
-add_subdirectory(blue_screen)
-
-# Link project libraries
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-  global_count
-  tools
-  blue_screen
-)
-
-# Windows specific libraries
+# Link system libraries
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        kernel32.lib
-        user32.lib
+    target_link_libraries(${PROJECT_NAME} PRIVATE 
+        gdi32
+        gdiplus
+        user32
     )
 endif()
 
-
-
-# Add explicit install target
-add_custom_target(install_all
-    COMMAND ${CMAKE_COMMAND} --install .
-    COMMENT "Installing all components"
-    DEPENDS ${PROJECT_NAME}
-)
-
-add_custom_command(TARGET mouse_lock_main POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_SOURCE_DIR}/blue.png
-    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/blue.png
-  COMMENT "Copying blue.png to output directory"
-)
+# Install project libraries

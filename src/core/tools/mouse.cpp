@@ -1,7 +1,7 @@
-#include "mouse.h"
-#include "global_count.h"
-#include "common_utils.h"
-#include "blue_screen.h"
+#include "../../../include/mouse.h"
+#include "../global_count/global_count.h"
+#include "../../../include/common_utils.h"
+#include "../blue_screen/blue_screen.h"
 #include <windows.h>
 #include <iostream>
 #include <thread>

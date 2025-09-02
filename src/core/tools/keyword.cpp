@@ -1,6 +1,6 @@
-#include "keyword.h"
-#include "global_count.h"
-#include "common_utils.h"
+#include "../../../include/keyword.h"
+#include "../global_count/global_count.h"
+#include "../../../include/common_utils.h"
 #include <windows.h>
 #include <iostream>
 #include <string>

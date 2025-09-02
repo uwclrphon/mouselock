@@ -6,17 +6,23 @@
 #include <windows.h>
 #include <mutex>
 #include <variant>
+#include <map>
+#include "../../../include/json_utils/json_utils.h"
+
+#ifdef _WIN32
+    #ifdef BUILDING_GLOBAL_COUNT_DLL
+        #define GLOBAL_COUNT_API __declspec(dllexport)
+    #else
+        #define GLOBAL_COUNT_API __declspec(dllimport)
+    #endif
+#else
+    #define GLOBAL_COUNT_API
+#endif
 
 // 前向声明替代包含头文件
 class BlueScreenSimulator;
-#ifdef ENABLE_DEBUG_MODE
-    inline constexpr int DEFAULT_BLUE_SCREEN_TIME = 20;
-#else 
-    inline constexpr int DEFAULT_BLUE_SCREEN_TIME = 120;
-#endif
-inline constexpr int DEFAULT_MOUSE_LOCK_TIME = 10;
 
-class GlobalCount {
+class GLOBAL_COUNT_API GlobalCount : public DebugLogger {
 public:
     using DebugInfo = std::variant<int, std::string, bool>;
     
@@ -51,19 +57,26 @@ public:
     [[nodiscard]] DebugInfo getDebugInfo() const;
     
 private:
+    static constexpr const char* CONFIG_FILE = "global_config.json";
+    
+    void loadConfig();
+    void createDefaultConfig();
+    int getConfigValue(const std::string& key, int defaultValue) const;
+    
     mutable std::mutex mutex_;
     std::atomic<int> time_{0};
     std::atomic<bool> is_mouse_lock_{false};
     std::atomic<bool> is_update_time_{true};
-    const int max_mouse_lock_time_{DEFAULT_MOUSE_LOCK_TIME};
+    int max_mouse_lock_time_;
 #ifdef ENABLE_DEBUG_MODE
     const bool debug_mode_{true};
 #else
     const bool debug_mode_{false};
 #endif
-    const int fake_blue_screen_time_{DEFAULT_BLUE_SCREEN_TIME};
+    int fake_blue_screen_time_;
     std::atomic<bool> is_fake_blue_screen_{false};
     std::atomic<bool> is_blue_screen_active_{false};
+    std::map<std::string, std::string> config_;
 
 public:
     [[nodiscard]] bool isBlueScreenActive() const {
@@ -74,7 +87,15 @@ public:
         is_blue_screen_active_.store(active);
     }
 
-private:
+    [[nodiscard]] int getMaxMouseLockTime() const {
+        std::scoped_lock lock(mutex_);
+        return max_mouse_lock_time_;
+    }
+
+    void setMaxMouseLockTime(int time) {
+        std::scoped_lock lock(mutex_);
+        max_mouse_lock_time_ = time;
+    }
 };
 
 #endif

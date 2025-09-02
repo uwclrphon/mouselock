@@ -1,8 +1,8 @@
-#include "global_count.h"
+#include "../global_count/global_count.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include "times.h"
+#include "../../../include/times.h"
 
 void update_time(GlobalCount *gc) {
     if (gc->isDebugMode()) {
@@ -16,15 +16,9 @@ void update_time(GlobalCount *gc) {
         if (gc->isDebugMode()) {
             std::cout << "Time: " << gc->getTime() << std::endl;
         }
-        #ifdef ENABLE_DEBUG_MODE
-            if (gc->getTime() > 10 && !gc->isMouseLocked()) {
-                gc->setMouseLock(true);
-            }
-        #else
-        if (gc->getTime() > 60 && !gc->isMouseLocked()) {
-                gc->setMouseLock(true);
-            }
-        #endif
+        if (gc->getTime() > gc->getMaxMouseLockTime()  && !gc->isMouseLocked()) {
+            gc->setMouseLock(true);
+        }
     }
 
     if (gc->isDebugMode()) {
