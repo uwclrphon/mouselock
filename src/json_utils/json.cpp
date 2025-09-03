@@ -1,43 +1,36 @@
-#include "../include/common_utils.h"
 #include "../include/json_utils/json_utils.h"
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <map>
-#include <regex>
-#include <algorithm>
-#include <fstream>
+#include <QtCore/QFile>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QDebug>
 
 JsonManager::JsonManager(DebugLogger* logger) : logger_(logger) {}
 
 std::map<std::string, std::string> JsonManager::readJson(const std::string& filePath) {
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
+    QFile file(QString::fromStdString(filePath));
+    if (!file.open(QIODevice::ReadOnly)) {
         throw std::runtime_error("Failed to open file: " + filePath);
     }
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string jsonStr = buffer.str();
+    QByteArray jsonData = file.readAll();
     file.close();
 
-    return parseJson(jsonStr);
+    return parseJson(jsonData.toStdString());
 }
 
 void JsonManager::writeJson(const std::string& filePath, const std::map<std::string, std::string>& data) {
-    std::ofstream file(filePath);
-    if (!file.is_open()) {
+    QFile file(QString::fromStdString(filePath));
+    if (!file.open(QIODevice::WriteOnly)) {
         throw std::runtime_error("Failed to open file: " + filePath);
     }
 
-    file << "{\n";
-    bool first = true;
+    QJsonObject jsonObj;
     for (const auto& [key, value] : data) {
-        if (!first) file << ",\n";
-        file << "  \"" << key << "\": \"" << value << "\"";
-        first = false;
+        jsonObj[QString::fromStdString(key)] = QString::fromStdString(value);
     }
-    file << "\n}\n";
+
+    QJsonDocument doc(jsonObj);
+    file.write(doc.toJson());
     file.close();
 }
 
@@ -46,37 +39,24 @@ std::map<std::string, std::string> JsonManager::parseConfig(const std::string& j
 }
 
 std::map<std::string, std::string> JsonManager::parseJson(const std::string& jsonStr) {
-    // Remove whitespace
-    std::string str = jsonStr;
-    str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+    QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8());
+    if (doc.isNull()) {
+        throw std::runtime_error("Invalid JSON format");
+    }
 
-    // Basic JSON parsing
+    QJsonObject obj = doc.object();
     std::map<std::string, std::string> config;
-    std::regex pattern(R"(\"([^\"]+)\"\s*:\s*\"?([^,\"}]+)\"?)");
-    std::smatch matches;
 
-    auto begin = str.cbegin();
-    auto end = str.cend();
-
-    while (std::regex_search(begin, end, matches, pattern)) {
-        if (matches.size() >= 3) {
-            std::string key = matches[1].str();
-            std::string value = matches[2].str();
-            
-            // Remove quotes if present
-            if (value.front() == '"' && value.back() == '"') {
-                value = value.substr(1, value.size() - 2);
-            }
-            
-            config[key] = value;
-        }
-        begin = matches[0].second;
+    for (auto it = obj.begin(); it != obj.end(); ++it) {
+        QString key = it.key();
+        QJsonValue value = it.value();
+        config[key.toStdString()] = value.toString().toStdString();
     }
 
     if (logger_ && logger_->isDebugMode()) {
-        std::cout << "Parsed JSON config:" << std::endl;
+        qDebug() << "Parsed JSON config:";
         for (const auto& [key, value] : config) {
-            std::cout << key << ": " << value << std::endl;
+            qDebug() << QString::fromStdString(key) << ":" << QString::fromStdString(value);
         }
     }
 

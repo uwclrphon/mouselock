@@ -1,8 +1,14 @@
 #pragma once
-#include "ui_qt_std1.h"
+#include "ui_gui.h"
+#include "../include/json_utils/json_utils.h"
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QDebug>
+
+class GuiDebugLogger : public DebugLogger {
+public:
+    bool isDebugMode() const override { return true; }
+};
 
 class qt_std1 : public QMainWindow {
     Q_OBJECT
@@ -20,4 +26,5 @@ private slots:
 private:
     void loadFromJson();
     Ui_qt_std1* ui;
+    JsonManager* jsonManager;
 };

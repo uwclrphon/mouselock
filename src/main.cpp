@@ -1,6 +1,6 @@
 #include <iostream>
 #include <filesystem>
-#include "qt_std1.h"
+#include "gui.h"
 #include "./utils/logger.h"
 #include <QApplication>
 #include <QSystemTrayIcon>

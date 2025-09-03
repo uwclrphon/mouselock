@@ -27,25 +27,12 @@
      <string>保存</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>10</y>
-      <width>91</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>时间</string>
-    </property>
-   </widget>
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>20</x>
       <y>10</y>
-      <width>641</width>
+      <width>721</width>
       <height>471</height>
      </rect>
     </property>
@@ -53,10 +40,10 @@
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>70</x>
         <y>30</y>
-        <width>81</width>
-        <height>31</height>
+        <width>80</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="text">
@@ -66,10 +53,10 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>70</x>
+        <x>100</x>
         <y>60</y>
         <width>51</width>
-        <height>31</height>
+        <height>20</height>
        </rect>
       </property>
       <property name="text">
@@ -79,7 +66,7 @@
      <widget class="QLineEdit" name="lineEdit">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>170</x>
         <y>30</y>
         <width>113</width>
         <height>20</height>
@@ -89,11 +76,37 @@
      <widget class="QLineEdit" name="lineEdit_2">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>170</x>
         <y>60</y>
         <width>113</width>
         <height>20</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>30</y>
+        <width>21</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_2">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>60</y>
+        <width>21</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </widget>

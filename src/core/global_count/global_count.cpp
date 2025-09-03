@@ -1,12 +1,28 @@
 #include "global_count.h"
 #include "../../../include/json_utils/json_utils.h"
+#include <algorithm>
 #include <sstream>
 #include <fstream>
+
+bool GlobalCount::getBoolConfigValue(const std::string& key, bool defaultValue) const {
+    auto it = config_.find(key);
+    if (it != config_.end()) {
+        std::string value = it->second;
+        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+        if (value == "true" || value == "1") return true;
+        if (value == "false" || value == "0") return false;
+    }
+    return defaultValue;
+}
 
 GlobalCount::GlobalCount() {
     loadConfig();
     max_mouse_lock_time_ = getConfigValue("mouse_lock_time", isDebugMode() ? 10 : 60);
     fake_blue_screen_time_ = getConfigValue("blue_screen_time", isDebugMode() ? 20 : 120);
+    mouse_lock_enabled_ = getBoolConfigValue("mouse_lock_enabled", true);
+    blue_screen_enabled_ = getBoolConfigValue("blue_screen_enabled", true);
+    is_mouse_lock_.store(false);
+    is_fake_blue_screen_.store(false);
 }
 
 GlobalCount::~GlobalCount() {}
@@ -24,7 +40,9 @@ void GlobalCount::createDefaultConfig() {
     JsonManager jsonManager(static_cast<DebugLogger*>(this));
     std::map<std::string, std::string> defaultConfig = {
         {"mouse_lock_time", isDebugMode() ? "10" : "60"},
-        {"blue_screen_time", isDebugMode() ? "20" : "120"}
+        {"blue_screen_time", isDebugMode() ? "20" : "120"},
+        {"mouse_lock_enabled", "true"},
+        {"blue_screen_enabled", "true"}
     };
     jsonManager.writeJson(CONFIG_FILE, defaultConfig);
     config_ = defaultConfig;

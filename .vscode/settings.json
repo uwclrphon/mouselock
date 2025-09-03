@@ -98,7 +98,11 @@
         "regex": "cpp",
         "future": "cpp",
         "stdfloat": "cpp",
-        "qstyle": "cpp"
+        "qstyle": "cpp",
+        "qapplication": "cpp",
+        "qsystemtrayicon": "cpp",
+        "qmainwindow": "cpp"
     },
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.compilerPath": "D:/Qt/Tools/mingw1310_64/bin/g++.exe"
 }

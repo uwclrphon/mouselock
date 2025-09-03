@@ -17,17 +17,25 @@ add_executable(${PROJECT_NAME}
     ${srcs} 
 ) 
 # Link Qt libraries manually
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    Qt6Core.lib
-    Qt6Gui.lib
-    Qt6Widgets.lib
-    global_count
-    core
-    json_utils
-)
-
-# Add Qt library directory
-link_directories("D:/Qt/6.9.0/mingw_64/lib")
+if(QT_ROOT)
+    target_link_libraries(${PROJECT_NAME} PRIVATE 
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Core.dll"
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Gui.dll"
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Widgets.dll"
+        global_count
+        core
+        json_utils
+    )
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE 
+        "${QT_LIBRARY_DIR}/Qt6Core.dll"
+        "${QT_LIBRARY_DIR}/Qt6Gui.dll"
+        "${QT_LIBRARY_DIR}/Qt6Widgets.dll"
+        global_count
+        core
+        json_utils
+    )
+endif()
 
 # Add all necessary include directories
 target_include_directories(${PROJECT_NAME} PRIVATE 
@@ -38,11 +46,21 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/src/core/blue_screen
     ${PROJECT_SOURCE_DIR}/src/core/tools
     ${PROJECT_SOURCE_DIR}/src/utils
-    "D:/Qt/6.9.0/mingw_64/include"
-    "D:/Qt/6.9.0/mingw_64/include/QtCore"
-    "D:/Qt/6.9.0/mingw_64/include/QtGui"
-    "D:/Qt/6.9.0/mingw_64/include/QtWidgets"
 )
+
+if(QT_ROOT)
+    # Add Qt library directory
+    link_directories("${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib")
+    # Add Qt include directories
+    target_include_directories(${PROJECT_NAME} PRIVATE 
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include"
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtCore"
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtGui"
+        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtWidgets"
+    )
+else()
+    message(STATUS "Using system Qt paths")
+endif()
 
 # Link system libraries
 if(WIN32)
@@ -54,3 +72,11 @@ if(WIN32)
 endif()
 
 # Install project libraries
+
+# 复制配置文件到构建目录
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/global_config.json
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+)

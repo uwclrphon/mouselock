@@ -62,6 +62,7 @@ private:
     void loadConfig();
     void createDefaultConfig();
     int getConfigValue(const std::string& key, int defaultValue) const;
+    bool getBoolConfigValue(const std::string& key, bool defaultValue) const;
     
     mutable std::mutex mutex_;
     std::atomic<int> time_{0};
@@ -76,7 +77,15 @@ private:
     int fake_blue_screen_time_;
     std::atomic<bool> is_fake_blue_screen_{false};
     std::atomic<bool> is_blue_screen_active_{false};
+    bool mouse_lock_enabled_{true};
+    bool blue_screen_enabled_{true};
     std::map<std::string, std::string> config_;
+
+public:
+    bool isMouseLockEnabled() const { return mouse_lock_enabled_; }
+    void setMouseLockEnabled(bool enabled) { mouse_lock_enabled_ = enabled; }
+    bool isBlueScreenEnabled() const { return blue_screen_enabled_; }
+    void setBlueScreenEnabled(bool enabled) { blue_screen_enabled_ = enabled; }
 
 public:
     [[nodiscard]] bool isBlueScreenActive() const {

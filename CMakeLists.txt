@@ -8,13 +8,22 @@ project(mouse_lock
 )
 
 # Qt configuration
-set(CMAKE_PREFIX_PATH "D:/Qt/6.9.0/mingw_64")
-set(QT_DIR "D:/Qt/6.9.0/mingw_64/lib/cmake/Qt6")
-find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+set(QT_ROOT "" CACHE PATH "Path to Qt installation root")
+set(QT_VERSION "6.9.0" CACHE STRING "Qt version")
+set(QT_ARCH "mingw_64" CACHE STRING "Qt architecture")
 
-# Set Qt library paths
-set(QT_LIBRARY_DIR "D:/Qt/6.9.0/mingw_64/lib")
-link_directories(${QT_LIBRARY_DIR})
+if(QT_ROOT)
+    set(CMAKE_PREFIX_PATH "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}")
+    set(QT_DIR "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib/cmake/Qt6")
+    find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+
+    # Set Qt library paths
+    set(QT_LIBRARY_DIR "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib")
+    link_directories(${QT_LIBRARY_DIR})
+else()
+    message(WARNING "Qt root path not specified, trying system paths")
+    find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+endif()
 
 # Windows specific settings
 if(WIN32)
@@ -46,13 +55,6 @@ set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Check for optional OpenCV
 find_package(OpenCV)
-find_package(jsoncpp REQUIRED)
-
-if(jsoncpp_FOUND)
-    message(STATUS "jsoncpp found: ${JSONCPP_DIR}")
-    message(STATUS "jsoncpp include dirs: ${JSONCPP_INCLUDE_DIRS}")
-    include_directories(${JSONCPP_INCLUDE_DIRS})
-endif()
 
 if(OpenCV_FOUND)
     message(STATUS "OpenCV found (optional)")
