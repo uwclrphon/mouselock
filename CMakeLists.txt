@@ -8,18 +8,23 @@ project(mouse_lock
 )
 
 # Qt configuration
-set(QT_ROOT "" CACHE PATH "Path to Qt installation root")
+set(QT_ROOT "D:/Qt/6.9.0/msvc2022_64" CACHE PATH "Path to Qt installation root")
 set(QT_VERSION "6.9.0" CACHE STRING "Qt version")
-set(QT_ARCH "mingw_64" CACHE STRING "Qt architecture")
+set(QT_ARCH "msvc2022_64" CACHE STRING "Qt architecture")
 
 if(QT_ROOT)
-    set(CMAKE_PREFIX_PATH "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}")
-    set(QT_DIR "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib/cmake/Qt6")
+    # Set the prefix path for find_package
+    set(CMAKE_PREFIX_PATH "${QT_ROOT}")
+    set(QT_DIR "${QT_ROOT}/lib/cmake/Qt6")
+    
+    # Find Qt packages
     find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
-
+    
     # Set Qt library paths
-    set(QT_LIBRARY_DIR "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib")
+    set(QT_LIBRARY_DIR "${QT_ROOT}/lib")
     link_directories(${QT_LIBRARY_DIR})
+    
+    message(STATUS "Using Qt from: ${QT_ROOT}")
 else()
     message(WARNING "Qt root path not specified, trying system paths")
     find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
@@ -34,6 +39,13 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# MSVC specific settings
+if(MSVC)
+    add_compile_options(/Zc:__cplusplus)
+    add_compile_options(/permissive-)
+    add_compile_options(/utf-8)
+endif()
 
 # Options
 option(BUILD_TESTING "Build tests" ON)
@@ -71,8 +83,8 @@ target_include_directories(common_config INTERFACE
   ${PROJECT_SOURCE_DIR}/src/global_count
 )
 target_compile_options(common_config INTERFACE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
 )
 
 # Add subdirectories

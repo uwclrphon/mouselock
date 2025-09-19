@@ -22,9 +22,6 @@ namespace CommonUtils {
         void* userData = nullptr) 
     {
         WNDCLASSW wc = {};
-        #ifdef _MSC_VER
-        wc.cbSize = sizeof(WNDCLASSW);
-        #endif
         wc.lpfnWndProc = wndProc;
         wc.hInstance = GetModuleHandleW(NULL);
         wc.lpszClassName = className;

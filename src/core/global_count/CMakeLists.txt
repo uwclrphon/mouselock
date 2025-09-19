@@ -18,6 +18,22 @@ target_link_libraries(${PROJECT_NAME}
   json_utils
 )
 
+# MSVC specific settings
+if(MSVC)
+  # Add import library directory
+  target_link_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_BINARY_DIR}/src/json_utils/${CMAKE_BUILD_TYPE}
+  )
+endif()
+
+# MSVC specific settings
+if(MSVC)
+  # Add DLL export definitions
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+      $<$<BOOL:${WIN32}>:BUILDING_GLOBAL_COUNT_DLL>
+  )
+endif()
+
 # Add DLL export definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<BOOL:${WIN32}>:BUILDING_GLOBAL_COUNT_DLL>

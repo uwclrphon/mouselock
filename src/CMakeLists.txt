@@ -6,6 +6,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(core)
 add_subdirectory(json_utils)
+
 File(GLOB srcs "*.cpp")
 
 # Specify MSVC UTF-8 encoding   
@@ -15,22 +16,34 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_executable(${PROJECT_NAME}
     WIN32 # If you need a terminal for debug, please comment this statement 
     ${srcs} 
-) 
+)
+
+# Add dependency to ensure core is built first
+add_dependencies(${PROJECT_NAME} core)
+
 # Link Qt libraries manually
 if(QT_ROOT)
     target_link_libraries(${PROJECT_NAME} PRIVATE 
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Core.dll"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Gui.dll"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Widgets.dll"
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
         global_count
         core
         json_utils
     )
+    
+    # Add Qt include directories
+    target_include_directories(${PROJECT_NAME} PRIVATE 
+        "${QT_ROOT}/include"
+        "${QT_ROOT}/include/QtCore"
+        "${QT_ROOT}/include/QtGui"
+        "${QT_ROOT}/include/QtWidgets"
+    )
 else()
     target_link_libraries(${PROJECT_NAME} PRIVATE 
-        "${QT_LIBRARY_DIR}/Qt6Core.dll"
-        "${QT_LIBRARY_DIR}/Qt6Gui.dll"
-        "${QT_LIBRARY_DIR}/Qt6Widgets.dll"
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
         global_count
         core
         json_utils
@@ -50,13 +63,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 if(QT_ROOT)
     # Add Qt library directory
-    link_directories("${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib")
+    link_directories("${QT_ROOT}/lib")
     # Add Qt include directories
     target_include_directories(${PROJECT_NAME} PRIVATE 
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtCore"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtGui"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtWidgets"
+        "${QT_ROOT}/include"
+        "${QT_ROOT}/include/QtCore"
+        "${QT_ROOT}/include/QtGui"
+        "${QT_ROOT}/include/QtWidgets"
     )
 else()
     message(STATUS "Using system Qt paths")

@@ -1,19 +1,29 @@
 project(core)
+# Add subdirectories in correct order
+add_subdirectory(global_count)
+add_subdirectory(blue_screen)
+add_subdirectory(tools)
+
 # Main executable
 add_library(${PROJECT_NAME} SHARED
   core.cpp
 )
+
+# Enable import library generation on Windows
+if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+endif()
+
+# Add dependency to ensure tools is built first
+add_dependencies(${PROJECT_NAME} tools)
 
 # Link common configuration
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
   common_config
 )
-
-# Add subdirectories
-add_subdirectory(global_count)
-add_subdirectory(tools)
-add_subdirectory(blue_screen)
 
 # Link project libraries
 target_link_libraries(${PROJECT_NAME}
@@ -31,7 +41,6 @@ if(WIN32)
         user32.lib
     )
 endif()
-
 
 
 # Add explicit install target

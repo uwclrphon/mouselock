@@ -4,25 +4,21 @@ set(CMAKE_AUTOMOC ON)
 
 # Use Qt paths from parent
 if(QT_ROOT)
-    # Qt configuration
-    link_directories("${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/lib")
-
     add_library(${PROJECT_NAME} SHARED
         json.cpp
     )
-
-    # Print debug info
-    message(STATUS "Using Qt from: ${QT_ROOT}/${QT_VERSION}/${QT_ARCH}")
-    message(STATUS "Qt library paths:")
-    message(STATUS "  Core: ${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Core.dll")
-    message(STATUS "  Gui: ${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Gui.dll")
-    message(STATUS "  Widgets: ${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Widgets.dll")
     
-    # Link Qt libraries manually
+    # Enable import library generation on Windows
+    if(WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+        )
+    endif()
+
+    # Link Qt libraries using imported targets
     target_link_libraries(${PROJECT_NAME} PRIVATE 
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Core.dll"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Gui.dll"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/bin/Qt6Widgets.dll"
+        Qt6::Core
+        Qt6::Gui
         common_config
     )
 
@@ -31,8 +27,6 @@ if(QT_ROOT)
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json_utils
         ${CMAKE_SOURCE_DIR}/src
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include"
-        "${QT_ROOT}/${QT_VERSION}/${QT_ARCH}/include/QtCore"
     )
 else()
     # Qt configuration
@@ -44,9 +38,8 @@ else()
 
     # Link Qt libraries manually
     target_link_libraries(${PROJECT_NAME} PRIVATE 
-        "${QT_LIBRARY_DIR}/../bin/Qt6Core.dll"
-        "${QT_LIBRARY_DIR}/../bin/Qt6Gui.dll"
-        "${QT_LIBRARY_DIR}/../bin/Qt6Widgets.dll"
+        Qt6::Core
+        Qt6::Gui
         common_config
     )
 
